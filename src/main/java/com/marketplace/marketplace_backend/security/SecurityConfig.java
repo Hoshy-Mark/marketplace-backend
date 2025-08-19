@@ -29,6 +29,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()           // Login liberado
                         .requestMatchers("/protected").hasAuthority("ADMIN") // Só admins podem acessar /protected
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated()                     // Todo o resto precisa de autenticação
                 )
                 .formLogin(form -> form.disable())
