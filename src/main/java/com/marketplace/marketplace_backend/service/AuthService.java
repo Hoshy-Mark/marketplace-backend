@@ -34,19 +34,4 @@ public class AuthService {
         String token = jwtUtils.generateToken(usuario);
         return new LoginResponse(token, usuario.getRole());
     }
-
-    public void createUser(String nome, String email, String senha, String role) {
-        if (usuarioRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Usuário já existe!");
-        }
-
-        Usuario usuario = Usuario.builder()
-                .nome(nome)
-                .email(email)
-                .senha(passwordEncoder.encode(senha))
-                .role(role)
-                .build();
-
-        usuarioRepository.save(usuario);
-    }
 }

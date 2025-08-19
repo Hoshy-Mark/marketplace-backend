@@ -1,16 +1,16 @@
 package com.marketplace.marketplace_backend.config;
 
-import com.marketplace.marketplace_backend.service.AuthService;
+import com.marketplace.marketplace_backend.service.UsuarioService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DataLoader {
 
-    private final AuthService authService;
+    private final UsuarioService usuarioService;
 
-    public DataLoader(AuthService authService) {
-        this.authService = authService;
+    public DataLoader(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
     @PostConstruct
@@ -19,9 +19,10 @@ public class DataLoader {
         String email = "admin@marketplace.com";
         String senha = "admin123";
         String role = "ADMIN";
+        String endereco = "Rua Admin, 1";
 
         try {
-            authService.createUser(nome, email, senha, role);
+            usuarioService.createUsuario(nome, email, senha, role, endereco);
             System.out.println("Usuário inicial criado: " + email + "/" + senha);
         } catch (Exception e) {
             System.out.println("Usuário já existe. Ignorando criação inicial.");
