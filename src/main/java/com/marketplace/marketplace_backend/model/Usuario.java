@@ -2,6 +2,7 @@ package com.marketplace.marketplace_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String senha;
 
     @Column(nullable = false)

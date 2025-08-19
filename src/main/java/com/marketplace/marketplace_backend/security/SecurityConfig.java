@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()           // Login liberado
+                        .requestMatchers("/register").permitAll()        // Registro liberado
                         .requestMatchers("/protected").hasAuthority("ADMIN") // Só admins podem acessar /protected
                         .requestMatchers(
                                 "/swagger-ui/**",
