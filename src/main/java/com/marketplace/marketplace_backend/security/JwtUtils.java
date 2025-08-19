@@ -1,6 +1,6 @@
 package com.marketplace.marketplace_backend.security;
 
-import com.marketplace.marketplace_backend.model.User;
+import com.marketplace.marketplace_backend.model.Usuario;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -12,21 +12,20 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    // Chave segura gerada para HS512
     private final SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private final long jwtExpirationMs = 86400000; // 24h
 
-    public String generateToken(User user) {
+    public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("role", user.getRole()) // adiciona a role no token
+                .setSubject(usuario.getEmail()) // login será por email
+                .claim("role", usuario.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(jwtSecret)
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
+    public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
                 .build()
