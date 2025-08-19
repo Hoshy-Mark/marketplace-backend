@@ -3,6 +3,7 @@ package com.marketplace.marketplace_backend.controller;
 import com.marketplace.marketplace_backend.dto.LoginRequest;
 import com.marketplace.marketplace_backend.dto.LoginResponse;
 import com.marketplace.marketplace_backend.dto.RegisterRequest;
+import com.marketplace.marketplace_backend.dto.RegisterResponse;
 import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.service.UsuarioService;
 import com.marketplace.marketplace_backend.service.AuthService;
@@ -25,10 +26,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            LoginResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
-
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
@@ -42,7 +47,16 @@ public class AuthController {
                     request.getEndereco()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+            RegisterResponse response = new RegisterResponse(
+                    usuario.getId(),
+                    usuario.getNome(),
+                    usuario.getEmail(),
+                    usuario.getRole(),
+                    usuario.getEndereco(),
+                    usuario.getDataCriacao().toString()
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
