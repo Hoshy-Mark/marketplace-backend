@@ -4,6 +4,7 @@ import com.marketplace.marketplace_backend.dto.LoginRequest;
 import com.marketplace.marketplace_backend.dto.LoginResponse;
 import com.marketplace.marketplace_backend.dto.RegisterRequest;
 import com.marketplace.marketplace_backend.dto.RegisterResponse;
+import com.marketplace.marketplace_backend.model.Role;
 import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.service.UsuarioService;
 import com.marketplace.marketplace_backend.service.AuthService;
@@ -37,7 +38,18 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            String role = request.getRole() != null ? request.getRole() : "USER";
+            // Converte a role do request para o enum Role
+            Role role;
+            if (request.getRole() != null) {
+                try {
+                    role = Role.valueOf(request.getRole().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Role inválida. Valores válidos: COMPRADOR, VENDEDOR, ADMIN");
+                }
+            } else {
+                role = Role.COMPRADOR; // valor padrão se não passar role
+            }
 
             Usuario usuario = usuarioService.createUsuario(
                     request.getNome(),
@@ -51,7 +63,7 @@ public class AuthController {
                     usuario.getId(),
                     usuario.getNome(),
                     usuario.getEmail(),
-                    usuario.getRole(),
+                    usuario.getRole().name(),
                     usuario.getEndereco(),
                     usuario.getDataCriacao().toString()
             );

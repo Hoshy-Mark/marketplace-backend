@@ -1,5 +1,6 @@
 package com.marketplace.marketplace_backend.service;
 
+import com.marketplace.marketplace_backend.model.Role;
 import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +32,11 @@ class UsuarioServiceTest {
         when(passwordEncoder.encode("123456")).thenReturn("hashed123456");
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Usuario usuario = usuarioService.createUsuario("Teste", "teste@email.com", "123456", "USER", "Rua A");
+        Usuario usuario = usuarioService.createUsuario("Teste", "teste@email.com", "123456", Role.COMPRADOR, "Rua A");
 
         assertEquals("Teste", usuario.getNome());
         assertEquals("hashed123456", usuario.getSenha());
-        assertEquals("USER", usuario.getRole());
+        assertEquals(Role.COMPRADOR, usuario.getRole().name());
         verify(usuarioRepository, times(1)).save(usuario);
     }
 
@@ -44,7 +45,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findByEmail("teste@email.com")).thenReturn(Optional.of(new Usuario()));
 
         RuntimeException ex = assertThrows(RuntimeException.class, () ->
-                usuarioService.createUsuario("Teste", "teste@email.com", "123456", "USER", "Rua A")
+                usuarioService.createUsuario("Teste", "teste@email.com", "123456", Role.ADMIN, "Rua A")
         );
         assertEquals("Usuário já existe com esse email", ex.getMessage());
         verify(usuarioRepository, never()).save(any());
@@ -93,11 +94,11 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
         when(usuarioRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Usuario updated = usuarioService.updateUsuario(1L, "Novo Nome", "novo@email.com", "123456", "ADMIN", "Rua B");
+        Usuario updated = usuarioService.updateUsuario(1L, "Novo Nome", "novo@email.com", "123456", Role.ADMIN, "Rua B");
 
         assertEquals("Novo Nome", updated.getNome());
         assertEquals("novo@email.com", updated.getEmail());
-        assertEquals("ADMIN", updated.getRole());
+        assertEquals(Role.ADMIN, usuario.getRole().name());
         verify(usuarioRepository, times(1)).save(updated);
     }
 
@@ -106,7 +107,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () ->
-                usuarioService.updateUsuario(1L, "Nome", "email", "123", "USER", "Rua A")
+                usuarioService.updateUsuario(1L, "Nome", "email", "123", Role.VENDEDOR, "Rua A")
         );
         assertEquals("Usuário não encontrado com id: 1", ex.getMessage());
     }

@@ -1,5 +1,6 @@
 package com.marketplace.marketplace_backend.service;
 
+import com.marketplace.marketplace_backend.model.Role;
 import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +21,7 @@ public class UsuarioService {
     }
 
     // Criar novo usuário
-    public Usuario createUsuario(String nome, String email, String senha, String role, String endereco) {
+    public Usuario createUsuario(String nome, String email, String senha, Role role, String endereco) {
         if (usuarioRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Usuário já existe com esse email");
         }
@@ -54,7 +55,7 @@ public class UsuarioService {
     }
 
     // Atualizar usuário
-    public Usuario updateUsuario(Long id, String nome, String email, String senha, String role, String endereco) {
+    public Usuario updateUsuario(Long id, String nome, String email, String senha, Role role, String endereco) {
         Usuario usuario = getUsuarioById(id);
 
         if (email != null && !email.equals(usuario.getEmail())) {

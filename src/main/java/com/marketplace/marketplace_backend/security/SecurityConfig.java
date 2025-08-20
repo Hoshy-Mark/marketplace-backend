@@ -1,4 +1,4 @@
-package com.marketplace.marketplace_backend.config;
+package com.marketplace.marketplace_backend.security;
 
 import com.marketplace.marketplace_backend.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
@@ -27,9 +27,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()           // Login liberado
-                        .requestMatchers("/register").permitAll()        // Registro liberado
-                        .requestMatchers("/protected").hasAuthority("ADMIN") // Só admins podem acessar /protected
+                        .requestMatchers("/login", "/register").permitAll() // Login e registro liberados
+                        .requestMatchers("/admin/**").hasRole("ADMIN")       // Só ADMIN pode acessar /admin/**
+                        .requestMatchers("/vendedor/**").hasRole("VENDEDOR") // Só VENDEDOR pode acessar /vendedor/**
+                        .requestMatchers("/comprador/**").hasRole("COMPRADOR") // Só COMPRADOR pode acessar /comprador/**
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -37,7 +38,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .anyRequest().authenticated()                     // Todo o resto precisa de autenticação
+                        .anyRequest().authenticated() // Todo o resto precisa de autenticação
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());

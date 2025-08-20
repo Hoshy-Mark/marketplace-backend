@@ -1,5 +1,6 @@
 package com.marketplace.marketplace_backend.config;
 
+import com.marketplace.marketplace_backend.model.Role;
 import com.marketplace.marketplace_backend.service.UsuarioService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ public class DataLoader {
         String nome = "Administrador";
         String email = "admin@marketplace.com";
         String senha = "admin123";
-        String role = "ADMIN";
+        Role role = Role.ADMIN;
         String endereco = "Rua Admin, 1";
 
         try {

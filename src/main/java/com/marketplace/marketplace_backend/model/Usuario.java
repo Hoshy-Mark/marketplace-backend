@@ -29,7 +29,8 @@ public class Usuario {
     private String senha;
 
     @Column(nullable = false)
-    private String role; // Ex: "ROLE_USER", "ROLE_ADMIN"
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column
     private String endereco;
