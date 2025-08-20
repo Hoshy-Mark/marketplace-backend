@@ -36,7 +36,7 @@ class UsuarioServiceTest {
 
         assertEquals("Teste", usuario.getNome());
         assertEquals("hashed123456", usuario.getSenha());
-        assertEquals(Role.COMPRADOR, usuario.getRole().name());
+        assertEquals(Role.COMPRADOR, usuario.getRole());
         verify(usuarioRepository, times(1)).save(usuario);
     }
 
@@ -98,7 +98,7 @@ class UsuarioServiceTest {
 
         assertEquals("Novo Nome", updated.getNome());
         assertEquals("novo@email.com", updated.getEmail());
-        assertEquals(Role.ADMIN, usuario.getRole().name());
+        assertEquals(Role.ADMIN, usuario.getRole());
         verify(usuarioRepository, times(1)).save(updated);
     }
 
