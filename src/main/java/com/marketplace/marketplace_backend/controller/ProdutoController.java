@@ -3,13 +3,15 @@ package com.marketplace.marketplace_backend.controller;
 import com.marketplace.marketplace_backend.dto.ProdutoRequest;
 import com.marketplace.marketplace_backend.dto.ProdutoResponse;
 import com.marketplace.marketplace_backend.model.Produto;
+import com.marketplace.marketplace_backend.model.Usuario;
+import com.marketplace.marketplace_backend.repository.UsuarioRepository;
 import com.marketplace.marketplace_backend.service.ProdutoService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,121 +20,104 @@ import java.util.stream.Collectors;
 public class ProdutoController {
 
     private final ProdutoService produtoService;
+    private final UsuarioRepository usuarioRepository;
 
-    public ProdutoController(ProdutoService produtoService) {
+    public ProdutoController(ProdutoService produtoService, UsuarioRepository usuarioRepository) {
         this.produtoService = produtoService;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    //Criar Produto
-    @PreAuthorize("hasRole('VENDEDOR')")
+    // Criar produto - apenas vendedores
     @PostMapping
-    public ResponseEntity<?> createProduto(@Valid @RequestBody ProdutoRequest request) {
-        try {
-            Produto produto = produtoService.createProduto(
-                    request.getNome(),
-                    request.getDescricao(),
-                    request.getPreco(),
-                    request.getQuantidadeEstoque(),
-                    request.getCategoriaId(),
-                    request.getVendedorId()
-            );
+    @PreAuthorize("hasRole('VENDEDOR')")
+    public ResponseEntity<ProdutoResponse> createProduto(
+            @RequestBody ProdutoRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-            ProdutoResponse response = new ProdutoResponse(
-                    produto.getId(),
-                    produto.getNome(),
-                    produto.getDescricao(),
-                    produto.getPreco(),
-                    produto.getQuantidadeEstoque(),
-                    produto.getCategoriaId(),
-                    produto.getVendedor().getId(),
-                    produto.getDataCriacao()
-            );
+        String email = userDetails.getUsername();
+        Usuario vendedor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        Produto produto = produtoService.createProduto(
+                request.getNome(),
+                request.getDescricao(),
+                request.getPreco(),
+                request.getQuantidadeEstoque(),
+                request.getCategoriaId(),
+                vendedor.getId()
+        );
+
+        return ResponseEntity.ok(toResponse(produto));
     }
 
-    //Mostrar Produto
+    // Buscar por ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProdutoById(@PathVariable Long id) {
-        try {
-            Produto produto = produtoService.getProdutoById(id);
-            ProdutoResponse response = new ProdutoResponse(
-                    produto.getId(),
-                    produto.getNome(),
-                    produto.getDescricao(),
-                    produto.getPreco(),
-                    produto.getQuantidadeEstoque(),
-                    produto.getCategoriaId(),
-                    produto.getVendedor().getId(),
-                    produto.getDataCriacao()
-            );
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public ResponseEntity<ProdutoResponse> getProdutoById(@PathVariable Long id) {
+        Produto produto = produtoService.getProdutoById(id);
+        return ResponseEntity.ok(toResponse(produto));
     }
 
-    //Listar produtos
+    // Listar todos
     @GetMapping
-    public List<ProdutoResponse> getAllProdutos() {
-        return produtoService.getAllProdutos().stream()
-                .map(p -> new ProdutoResponse(
-                        p.getId(),
-                        p.getNome(),
-                        p.getDescricao(),
-                        p.getPreco(),
-                        p.getQuantidadeEstoque(),
-                        p.getCategoriaId(),
-                        p.getVendedor().getId(),
-                        p.getDataCriacao()
-                ))
+    public ResponseEntity<List<ProdutoResponse>> getAllProdutos() {
+        List<ProdutoResponse> produtos = produtoService.getAllProdutos()
+                .stream()
+                .map(this::toResponse)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(produtos);
     }
 
-    //Atualizar produto
-    @PreAuthorize("hasRole('VENDEDOR')")
+    // Atualizar produto - apenas vendedor dono
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduto(@PathVariable Long id, @Valid @RequestBody ProdutoRequest request) {
-        try {
-            Produto produto = produtoService.updateProduto(
-                    id,
-                    request.getNome(),
-                    request.getDescricao(),
-                    request.getPreco(),
-                    request.getQuantidadeEstoque(),
-                    request.getCategoriaId(),
-                    request.getVendedorId()
-            );
+    @PreAuthorize("hasRole('VENDEDOR')")
+    public ResponseEntity<ProdutoResponse> updateProduto(
+            @PathVariable Long id,
+            @RequestBody ProdutoRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-            ProdutoResponse response = new ProdutoResponse(
-                    produto.getId(),
-                    produto.getNome(),
-                    produto.getDescricao(),
-                    produto.getPreco(),
-                    produto.getQuantidadeEstoque(),
-                    produto.getCategoriaId(),
-                    produto.getVendedor().getId(),
-                    produto.getDataCriacao()
-            );
+        String email = userDetails.getUsername();
+        Usuario vendedor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
+        Produto produto = produtoService.updateProduto(
+                id,
+                request.getNome(),
+                request.getDescricao(),
+                request.getPreco(),
+                request.getQuantidadeEstoque(),
+                request.getCategoriaId(),
+                vendedor.getId()
+        );
+
+        return ResponseEntity.ok(toResponse(produto));
     }
 
-    //Deletar Produto
-    @PreAuthorize("hasRole('VENDEDOR')")
+    // Deletar produto - apenas vendedor dono
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduto(@PathVariable Long id, @RequestParam Long vendedorId) {
-        try {
-            produtoService.deleteProduto(id, vendedorId);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
+    @PreAuthorize("hasRole('VENDEDOR')")
+    public ResponseEntity<Void> deleteProduto(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();
+        Usuario vendedor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        produtoService.deleteProduto(id, vendedor.getId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    private ProdutoResponse toResponse(Produto produto) {
+        return new ProdutoResponse(
+                produto.getId(),
+                produto.getNome(),
+                produto.getDescricao(),
+                produto.getPreco(),
+                produto.getQuantidadeEstoque(),
+                produto.getCategoria().getId(),
+                produto.getVendedor().getId(),
+                produto.getDataCriacao().toString()
+        );
     }
 }

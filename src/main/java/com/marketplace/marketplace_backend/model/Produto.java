@@ -30,9 +30,10 @@ public class Produto {
     @Column(nullable = false)
     private Integer quantidadeEstoque;
 
-    // Relacionamento com Categoria (pode ser outra entidade no futuro)
-    @Column(name = "categoria_id", nullable = false)
-    private Long categoriaId;
+    // Relacionamento com Categoria
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
     // Relacionamento com Vendedor (Usuario)
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,8 +1,10 @@
 package com.marketplace.marketplace_backend.service;
 
+import com.marketplace.marketplace_backend.model.Categoria;
 import com.marketplace.marketplace_backend.model.Produto;
 import com.marketplace.marketplace_backend.model.Role;
 import com.marketplace.marketplace_backend.model.Usuario;
+import com.marketplace.marketplace_backend.repository.CategoriaRepository;
 import com.marketplace.marketplace_backend.repository.ProdutoRepository;
 import com.marketplace.marketplace_backend.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,14 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProdutoService(ProdutoRepository produtoRepository, UsuarioRepository usuarioRepository) {
+    public ProdutoService(ProdutoRepository produtoRepository,
+                          UsuarioRepository usuarioRepository,
+                          CategoriaRepository categoriaRepository) {
         this.produtoRepository = produtoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     // Criar novo produto (apenas VENDEDOR)
@@ -30,12 +36,15 @@ public class ProdutoService {
             throw new RuntimeException("Apenas vendedores podem criar produtos");
         }
 
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
         Produto produto = Produto.builder()
                 .nome(nome)
                 .descricao(descricao)
                 .preco(preco)
                 .quantidadeEstoque(quantidadeEstoque)
-                .categoriaId(categoriaId)
+                .categoria(categoria)
                 .vendedor(vendedor)
                 .build();
 
@@ -65,7 +74,11 @@ public class ProdutoService {
         if (descricao != null) produto.setDescricao(descricao);
         if (preco != null) produto.setPreco(preco);
         if (quantidadeEstoque != null) produto.setQuantidadeEstoque(quantidadeEstoque);
-        if (categoriaId != null) produto.setCategoriaId(categoriaId);
+        if (categoriaId != null) {
+            Categoria categoria = categoriaRepository.findById(categoriaId)
+                    .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+            produto.setCategoria(categoria);
+        }
 
         return produtoRepository.save(produto);
     }

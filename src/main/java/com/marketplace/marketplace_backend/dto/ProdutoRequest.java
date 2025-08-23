@@ -10,6 +10,5 @@ public class ProdutoRequest {
     private String descricao;
     private BigDecimal preco;
     private Integer quantidadeEstoque;
-    private Long categoriaId;
-    private Long vendedorId;
+    private Long categoriaId; // vem do front
 }
