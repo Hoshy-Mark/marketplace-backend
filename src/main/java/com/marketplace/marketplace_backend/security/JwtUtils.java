@@ -19,6 +19,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .setSubject(usuario.getEmail()) // login será por email
                 .claim("role", usuario.getRole().name())
+                .claim("id", usuario.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(jwtSecret)
@@ -41,5 +42,14 @@ public class JwtUtils {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("role", String.class);
+    }
+
+    public Long getIdFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("id", Long.class);
     }
 }

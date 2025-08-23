@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                     // Cria autenticação usando a role do token
-                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);;
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
