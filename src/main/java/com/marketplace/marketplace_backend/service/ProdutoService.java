@@ -7,6 +7,8 @@ import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.repository.CategoriaRepository;
 import com.marketplace.marketplace_backend.repository.ProdutoRepository;
 import com.marketplace.marketplace_backend.repository.UsuarioRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -92,5 +94,18 @@ public class ProdutoService {
         }
 
         produtoRepository.delete(produto);
+    }
+
+    //Aplicar filtos
+    public Page<Produto> listarProdutos(Long categoriaId, BigDecimal precoMax, Pageable pageable) {
+        if (categoriaId != null && precoMax != null) {
+            return produtoRepository.findByCategoria_IdAndPrecoLessThanEqual(categoriaId, precoMax, pageable);
+        } else if (categoriaId != null) {
+            return produtoRepository.findByCategoria_Id(categoriaId, pageable);
+        } else if (precoMax != null) {
+            return produtoRepository.findByPrecoLessThanEqual(precoMax, pageable);
+        } else {
+            return produtoRepository.findAll(pageable);
+        }
     }
 }

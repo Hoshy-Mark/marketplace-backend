@@ -6,12 +6,16 @@ import com.marketplace.marketplace_backend.model.Produto;
 import com.marketplace.marketplace_backend.model.Usuario;
 import com.marketplace.marketplace_backend.repository.UsuarioRepository;
 import com.marketplace.marketplace_backend.service.ProdutoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,13 +61,19 @@ public class ProdutoController {
         return ResponseEntity.ok(toResponse(produto));
     }
 
-    // Listar todos
+    // Listar produtos com filtros e paginação
     @GetMapping
-    public ResponseEntity<List<ProdutoResponse>> getAllProdutos() {
-        List<ProdutoResponse> produtos = produtoService.getAllProdutos()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<ProdutoResponse>> listarProdutos(
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<ProdutoResponse> produtos = produtoService.listarProdutos(categoriaId, precoMax, pageable)
+                .map(this::toResponse);
+
         return ResponseEntity.ok(produtos);
     }
 
